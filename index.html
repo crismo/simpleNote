@@ -37,19 +37,24 @@
 
 <body>
     <div id="container">
-        <textarea id="content"></textarea>
+        <textarea id="content" placeholder="">
+
+        </textarea>
     </div>
 
     <script>
 
-        const key = "scratchPadd"
-
         const padd = document.querySelector("#content");
 
+        const info = `Ctrl + S -> Export notes \nCtrl + D -> Delete`;
+
+        padd.setAttribute("placeholder", info);
+
+        const key = "scratchPadd";
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
         const docref = urlParams.get('ref') ?? randomUniqueRef();
-        const doc = localStorage.getItem(key + docref) || { content: '', created: Date.now(), edited: Date.now() };
+        let doc = localStorage.getItem(key + docref) || createDoc();
 
         if (!urlParams.get('ref')) {
             urlParams.set('ref', docref)
@@ -65,6 +70,48 @@
             doc.content = event.target.value;
             saveDoc(docref, key, JSON.stringify(doc));
         });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.ctrlKey) {
+
+                event.preventDefault();
+
+                switch (event.key) {
+                    case 's': exportToFile(docref, doc);
+                        break;
+                    case 'd': deleteDoc(docref);
+                        window.location.href = window.location.origin;
+                        break;
+                }
+
+            }
+        });
+
+
+        function createDoc() {
+            return { content: '', created: Date.now(), edited: Date.now() };
+        }
+
+        function deleteDoc(ref) {
+            localStorage.removeItem(`${key}_${ref}`);
+            doc = { content: '', created: Date.now(), edited: Date.now() };
+            padd.textContent = doc.content;
+        }
+
+        function exportToFile(ref, doc) {
+
+            const blob = new Blob([doc.content], { type: "text/plain" });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${ref}.txt`;
+            document.body.appendChild(a);
+            a.click();
+
+            URL.revokeObjectURL(url);
+            a.remove();
+        }
 
 
         function getDoc(ref, key) {
