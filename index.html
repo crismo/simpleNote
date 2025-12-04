@@ -7,6 +7,37 @@
     <link rel="icon" href="fav.svg" type="image/svg+xml">
     <title>Scratchpad</title>
     <style>
+        :root {
+            --background-content: #FDF6E3;
+            --background-secondary: #EEE8D5;
+            --text-color: #657B83;
+            --primary-color: #007bff;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background-content: #282A36;
+                --background-secondary: #21222C;
+                --text-color: #eeeeee;
+                --primary-color: #90caf9;
+            }
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --background-content: #FDF6E3;
+                --background-secondary: #EEE8D5;
+                --text-color: #657B83;
+                --primary-color: #007bff;
+            }
+        }
+
+        body {
+            background-color: var(--background-secondary);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
         html,
         body {
             margin: 0;
@@ -31,7 +62,8 @@
             box-sizing: border-box;
             padding: 20px;
             resize: none;
-
+            color: var(--text-color);
+            background-color: var(--background-content);
         }
     </style>
 </head>
