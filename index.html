@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Padd</title>
+    <link rel="icon" href="fav.svg" type="image/svg+xml">
+    <title>Scratchpad</title>
     <style>
         html,
         body {
@@ -46,7 +47,7 @@
 
         const padd = document.querySelector("#content");
 
-        const info = `Ctrl + S -> Export notes \nCtrl + D -> Delete`;
+        const info = `Ctrl + S -> Export notes \nCtrl + D -> Delete\nCtrl + X -> Clear\nCtrl + R -> Run`;
 
         padd.setAttribute("placeholder", info);
 
@@ -64,7 +65,7 @@
             saveDoc(docref, key, JSON.stringify(doc));
         }
 
-        padd.textContent = doc.content;
+        padd.value = doc.content;
 
         padd.addEventListener('input', (event) => {
             doc.content = event.target.value;
@@ -74,18 +75,52 @@
         document.addEventListener('keydown', function (event) {
             if (event.ctrlKey) {
 
-                event.preventDefault();
+                let handled = false;
 
                 switch (event.key) {
                     case 's': exportToFile(docref, doc);
+                        handled = true;
                         break;
                     case 'd': deleteDoc(docref);
                         window.location.href = window.location.origin;
+                        handled = true;
                         break;
+                    case 'x':
+                        console.log("arghh")
+                        doc.content = "";
+                        padd.value = "";
+                        saveDoc(docref, key, JSON.stringify(doc));
+                        handled = true;
+                        break;
+                    case 'r': runCode(doc);
+                        handled = true;
+                        break;
+                }
+
+                if (handled) {
+                    event.preventDefault();
                 }
 
             }
         });
+
+
+        function runCode(doc) {
+
+            let result = '';
+            try {
+                let temp = console.log;
+                let stack = []
+                console.log = (...items) => { stack.push(...items); temp(...items) };
+                eval(doc.content);
+                console.log = temp;
+                result = stack.join("\n");
+            } catch (e) {
+                result = e.toString();
+            }
+
+            padd.value += `\n${result}`;
+        }
 
 
         function createDoc() {
@@ -95,7 +130,7 @@
         function deleteDoc(ref) {
             localStorage.removeItem(`${key}_${ref}`);
             doc = { content: '', created: Date.now(), edited: Date.now() };
-            padd.textContent = doc.content;
+            padd.value = doc.content;
         }
 
         function exportToFile(ref, doc) {
@@ -119,6 +154,7 @@
         }
 
         function saveDoc(ref, key, doc) {
+            doc.edited = Date.now();
             localStorage.setItem(`${key}_${ref}`, doc);
         }
 
